@@ -33,6 +33,26 @@ def apply_actions(service, email_id, actions):
         service.users().messages().modify(userId='me', id=email_id, body={'removeLabelIds': ['UNREAD']}).execute()
     if 'mark_as_unread' in actions:
         service.users().messages().modify(userId='me', id=email_id, body={'addLabelIds': ['UNREAD']}).execute()
+    if 'move' in actions:
+        # Example: move to label 'Processed'. Create it if it doesn't exist.
+        label_name = 'Processed'
+        labels = service.users().labels().list(userId='me').execute().get('labels', [])
+        label_id = next((label['id'] for label in labels if label['name'].lower() == label_name.lower()), None)
+
+        if not label_id:
+            label = service.users().labels().create(userId='me', body={
+                'name': label_name,
+                'labelListVisibility': 'labelShow',
+                'messageListVisibility': 'show'
+            }).execute()
+            label_id = label['id']
+
+        # Apply label and optionally remove INBOX
+        service.users().messages().modify(userId='me', id=email_id, body={
+            'addLabelIds': [label_id],
+            'removeLabelIds': ['INBOX']
+        }).execute()
+
 
 def process():
     with open('rules.json') as f:
@@ -57,7 +77,8 @@ def process():
             'is_read': row[7]
         }
         matches = [match_rule(email, rule) for rule in config['rules']]
-        if (config['predicate'].lower() == 'all' and all(matches)) or            (config['predicate'].lower() == 'any' and any(matches)):
+        if (config['predicate'].lower() == 'all' and all(matches)) or \
+           (config['predicate'].lower() == 'any' and any(matches)):
             apply_actions(service, email['id'], config['actions'])
 
     conn.close()

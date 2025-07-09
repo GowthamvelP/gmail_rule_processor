@@ -1,15 +1,15 @@
 {
-  "predicate": "All",
+  "predicate": "Any",
   "rules": [
     {
       "field": "From",
       "predicate": "Contains",
-      "value": "example@example.com"
+      "value": "makemytrip"
     },
     {
       "field": "Subject",
-      "predicate": "Does not Contain",
-      "value": "promo"
+      "predicate": "Contains",
+      "value": "pending train booking"
     }
   ],
   "actions": ["mark_as_read"]

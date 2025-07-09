@@ -23,5 +23,8 @@ python process_emails.py
 ```bash
 python -m unittest test_rules.py
 ```
+```bash
+python -m unittest test_subject_rules.py
+```
 
 ---
